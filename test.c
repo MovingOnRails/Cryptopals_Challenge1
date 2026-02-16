@@ -102,23 +102,25 @@ int main(int argc,char* argv[]){
 
     hexString = argv[1];
     int base64StringLength = 0;
-    /*for(int i=0; hexString[i] != NULL; i+=6){
-        base64StringLength+= 4;
-    }*/
-   for(int i =0; hexString[i] != NULL; i+=3){
+   for(int i =0; hexString[i] != NULL; i+=6){
         if(hexString[i] == NULL){
             break;
-        } else if(hexString[i+1] == NULL || hexString[i+2] == NULL){
+        } else if( hexString[i+1] == NULL ||
+            hexString[i+2] == NULL ||
+            hexString[i+3] == NULL ||
+            hexString[i+4] == NULL ||
+            hexString[i+5] == NULL
+        ){
             base64StringLength += 4;
             break;
         } else {
             base64StringLength += 4;
         }
     }
+    char base64String[base64StringLength+1];
+    base64String[base64StringLength] = NULL;
     printf("base64StringLength = %i\n",base64StringLength);
 
-    int currentHexStringIndex = 0;
-    int currentBase64StringIndex = 0;
     
     char firstChar = 0;
     char secondChar = 0;
@@ -131,26 +133,20 @@ int main(int argc,char* argv[]){
     char fifthHex = 0;
     char sixthHex = 0;
 
-    char firstRaw = 0;
-    char secondRaw = 0;
-    char thirdRaw = 0;
-    char fourthRaw = 0;
-    char fifthRaw = 0;
-    char sixthRaw = 0;
-
-    char base64String[base64StringLength+1];
-    base64String[base64StringLength] = NULL;
-
     uint8_t index = 0;
 
+    int currentHexStringIndex = 0;
+    int currentBase64StringIndex = 0;
+
     while(true){
-        firstChar = hexString[currentHexStringIndex];
-        if(firstChar == NULL){
+        if(hexString[currentHexStringIndex] == NULL){
             break;
         }
-        currentHexStringIndex++;
-        secondChar = hexString[currentHexStringIndex];
-        if(secondChar == NULL){
+        firstChar = ((dictionaryHexToRaw[hexString[currentHexStringIndex]]) << 4) | dictionaryHexToRaw[hexString[currentHexStringIndex+1]];
+
+        currentHexStringIndex+=2;
+
+        if(hexString[currentHexStringIndex] == NULL){
             index = (firstChar >> 2);
             base64String[currentBase64StringIndex] = dictionaryRawToBase64[(firstChar >> 2)];
             currentBase64StringIndex++;
@@ -165,9 +161,11 @@ int main(int argc,char* argv[]){
             base64String[currentBase64StringIndex] = '=';
             break;
         }
-        currentHexStringIndex++;
-        thirdChar = hexString[currentHexStringIndex];
-        if(thirdChar == NULL){
+        
+        secondChar = ((dictionaryHexToRaw[hexString[currentHexStringIndex]]) << 4) | dictionaryHexToRaw[hexString[currentHexStringIndex+1]];
+        currentHexStringIndex += 2;
+
+        if(hexString[currentHexStringIndex] == NULL){
             index = (firstChar >> 2);
             base64String[currentBase64StringIndex] = dictionaryRawToBase64[(firstChar >> 2)];
             currentBase64StringIndex++;
@@ -183,6 +181,8 @@ int main(int argc,char* argv[]){
             base64String[currentBase64StringIndex] = '=';
             break;
         }
+        thirdChar = ((dictionaryHexToRaw[hexString[currentHexStringIndex]]) << 4) | dictionaryHexToRaw[hexString[currentHexStringIndex+1]];
+
         index = (firstChar >> 2);
         base64String[currentBase64StringIndex] = dictionaryRawToBase64[(firstChar >> 2)];
         currentBase64StringIndex++;
@@ -199,7 +199,7 @@ int main(int argc,char* argv[]){
         base64String[currentBase64StringIndex] = dictionaryRawToBase64[index];
         currentBase64StringIndex++;
 
-        currentHexStringIndex++;
+        currentHexStringIndex+=2;
     }
     printf("base64String: %s\n", base64String);
 
